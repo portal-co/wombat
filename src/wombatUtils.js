@@ -1,3 +1,7 @@
+import { _WeakMap } from "@portal-solutions/semble-weak-map";
+
+export * from './wombatSnapshots.js'
+
 /**
  * Ensures the supplied argument is a number or if it is not (can not be coerced to a number)
  * this function returns null.
@@ -62,3 +66,13 @@ export function autobind(clazz) {
  * @type {{yes: boolean}}
  */
 export var ThrowExceptions = { yes: false };
+
+/**
+ * 
+ * Create a private key
+ * 
+ * @type {(a: string) => WeakMap}
+ */
+export const wombatKey = (a) => wombatKey[a] ??= new _WeakMap();
+
+export const wombatOrigApply = wombatKey(`orig_apply`);
