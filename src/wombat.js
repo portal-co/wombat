@@ -2765,10 +2765,7 @@ Wombat.prototype.rewriteTextNodeFn = function (fnThis, originalFn, argsObj) {
   } else {
     args = argsObj;
   }
-  if (originalFn.__WB_orig_apply) {
-    return originalFn.__WB_orig_apply(deproxiedThis, args);
-  }
-  return originalFn.apply(deproxiedThis, args);
+  return apply(originalFn, deproxiedThis, args);
 };
 
 /**
@@ -2782,10 +2779,7 @@ Wombat.prototype.rewriteChildNodeFn = function (fnThis, originalFn, argsObj) {
   var thisObj = this.proxyToObj(fnThis);
   if (argsObj.length === 0) return originalFn.call(thisObj);
   var newArgs = this.rewriteElementsInArguments(argsObj);
-  if (originalFn.__WB_orig_apply) {
-    return originalFn.__WB_orig_apply(thisObj, newArgs);
-  }
-  return originalFn.apply(thisObj, newArgs);
+  return apply(originalFn, thisObj, newArgs);
 };
 
 /**
@@ -2848,10 +2842,7 @@ Wombat.prototype.rewriteSetTimeoutInterval = function (
   // setTimeout|setInterval does not require its this arg to be window so just in case
   // someone got funky with it
   var thisObj = this.proxyToObj(fnThis);
-  if (originalFn.__WB_orig_apply) {
-    return originalFn.__WB_orig_apply(thisObj, args);
-  }
-  return originalFn.apply(thisObj, args);
+  return apply(originalFn, thisObj, args);
 };
 
 /**
@@ -3569,10 +3560,8 @@ Wombat.prototype.overrideFuncArgProxyToObj = function (
       }
     }
     var thisObj = wombat.proxyToObj(this);
-    if (orig.__WB_orig_apply) {
-      return orig.__WB_orig_apply(thisObj, args);
-    }
-    return orig.apply(thisObj, args);
+    return apply(orig, thisObj, args);
+
   };
 };
 
@@ -3835,10 +3824,7 @@ Wombat.prototype.overrideAnUIEvent = function (which) {
     ConstructorFN.prototype[initFNKey] = function () {
       var thisObj = wombat.proxyToObj(this);
       if (arguments.length === 0 || arguments.length < 3) {
-        if (originalInitFn.__WB_orig_apply) {
-          return originalInitFn.__WB_orig_apply(thisObj, arguments);
-        }
-        return originalInitFn.apply(thisObj, arguments);
+        return apply(originalInitFn, thisObj, arguments);
       }
       var newArgs = new Array(arguments.length);
       for (var i = 0; i < arguments.length; i++) {
@@ -3848,10 +3834,7 @@ Wombat.prototype.overrideAnUIEvent = function (which) {
           newArgs[i] = arguments[i];
         }
       }
-      if (originalInitFn.__WB_orig_apply) {
-        return originalInitFn.__WB_orig_apply(thisObj, newArgs);
-      }
-      return originalInitFn.apply(thisObj, newArgs);
+      return apply(originalInitFn, thisObj, newArgs);
     };
   }
   this.$wbwindow[which] = (function (EventConstructor) {
@@ -3890,10 +3873,8 @@ Wombat.prototype.rewriteParentNodeFn = function (fnThis, originalFn, argsObj) {
     ? argsObj
     : this.rewriteElementsInArguments(argsObj);
   var thisObj = this.proxyToObj(fnThis);
-  if (originalFn.__WB_orig_apply) {
-    return originalFn.__WB_orig_apply(thisObj, argArr);
-  }
-  return originalFn.apply(thisObj, argArr);
+  return apply(originalFn, thisObj, argArr);
+
 };
 
 /**
@@ -4167,39 +4148,27 @@ Wombat.prototype.initCSSOMOverrides = function () {
     var originalSet = this.$wbwindow.StylePropertyMap.prototype.set;
     this.$wbwindow.StylePropertyMap.prototype.set = function set() {
       if (arguments.length <= 1) {
-        if (originalSet.__WB_orig_apply) {
-          return originalSet.__WB_orig_apply(this, arguments);
-        }
-        return originalSet.apply(this, arguments);
+        return apply(originalSet, this, arguments);
       }
       var newArgs = new Array(arguments.length);
       newArgs[0] = arguments[0];
       for (var i = 1; i < arguments.length; i++) {
         newArgs[i] = wombat.noExceptRewriteStyle(arguments[i]);
       }
-      if (originalSet.__WB_orig_apply) {
-        return originalSet.__WB_orig_apply(this, newArgs);
-      }
-      return originalSet.apply(this, newArgs);
+      return apply(originalSet, this, newArgs);
     };
 
     var originalAppend = this.$wbwindow.StylePropertyMap.prototype.append;
     this.$wbwindow.StylePropertyMap.prototype.append = function append() {
       if (arguments.length <= 1) {
-        if (originalSet.__WB_orig_apply) {
-          return originalAppend.__WB_orig_apply(this, arguments);
-        }
-        return originalAppend.apply(this, arguments);
+        return apply(originalAppend, this, arguments)
       }
       var newArgs = new Array(arguments.length);
       newArgs[0] = arguments[0];
       for (var i = 1; i < arguments.length; i++) {
         newArgs[i] = wombat.noExceptRewriteStyle(arguments[i]);
       }
-      if (originalAppend.__WB_orig_apply) {
-        return originalAppend.__WB_orig_apply(this, newArgs);
-      }
-      return originalAppend.apply(this, newArgs);
+      return apply(originalAppend, this, newArgs);
     };
   }
 };
@@ -5293,10 +5262,7 @@ Wombat.prototype.initDocWriteOpenCloseOverride = function () {
     }
     var thisObj = wombat.proxyToObj(this);
     wombat.initNewWindowWombat(thisObj.defaultView);
-    if (originalClose.__WB_orig_apply) {
-      return originalClose.__WB_orig_apply(thisObj, arguments);
-    }
-    return originalClose.apply(thisObj, arguments);
+    return apply(originalClose, thisObj, arguments);
   };
 
   $wbDocument.close = newClose;
@@ -6855,7 +6821,7 @@ Wombat.prototype.initEvalOverride = function () {
     if (obj && obj.eval && obj.eval !== eval) {
       return {
         eval: function () {
-          return obj.eval.__WB_orig_apply(obj, arguments);
+          return apply(obj.eval, obj, arguments);
         }
       };
     } else {
@@ -6875,7 +6841,7 @@ Wombat.prototype.initEvalOverride = function () {
       return {
         eval: function () {
           // should have at least 2 arguments as 2 are injected
-          return obj.eval.__WB_orig_apply(obj, [].slice.call(arguments, 2));
+          return apply(obj.eval, obj, [].slice.call(arguments, 2));
         }
       };
     } else {
