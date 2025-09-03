@@ -78,7 +78,7 @@ export var ThrowExceptions = { yes: false };
 export const wombatKey = a => {
   if (WeakMap) return (wombatKey[a] ??= new WeakMap());
   const wb_key = '__WB_key_' + a;
-  return freeze({
+  return wombatKey[a] ??= freeze({
     get(object) {
       return object[wb_key];
     },
