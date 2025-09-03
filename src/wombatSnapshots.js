@@ -1,8 +1,8 @@
-import { _WeakMap } from "@portal-solutions/semble-weak-map";
+// import { _WeakMap } from "@portal-solutions/semble-weak-map";
 
 const { bind, apply: nativeApply } = Function.prototype;
 
-export const { defineProperty } = Object;
+export const { defineProperty,freeze } = Object;
 
 /**
  * uncurryThis()
@@ -27,5 +27,6 @@ export const uncurryThis = bind.bind(bind.call);
 export const apply = uncurryThis(nativeApply);
 
 
-export const weakmapGet = uncurryThis(_WeakMap.prototype.get);
-export const weakmapSet = uncurryThis(_WeakMap.prototype.set);
+export const weakmapGet = WeakMap ? uncurryThis(WeakMap.prototype.get) : (a,...args) => a.get(...args);
+export const weakmapSet = WeakMap ? uncurryThis(WeakMap.prototype.set) : (a,...args) => a.set(...args);
+export const weakmapHas = WeakMap ? uncurryThis(WeakMap.prototype.has) : (a,...args) => a.has(...args);
