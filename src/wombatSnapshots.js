@@ -27,6 +27,6 @@ export const uncurryThis = bind.bind(bind.call);
 export const apply = uncurryThis(nativeApply);
 
 
-export const weakmapGet = WeakMap ? uncurryThis(WeakMap.prototype.get) : (a,...args) => a.get(...args);
-export const weakmapSet = WeakMap ? uncurryThis(WeakMap.prototype.set) : (a,...args) => a.set(...args);
-export const weakmapHas = WeakMap ? uncurryThis(WeakMap.prototype.has) : (a,...args) => a.has(...args);
+export const weakmapGet = 'WeakMap' in self ? uncurryThis(WeakMap.prototype.get) : (a,...args) => a.get(...args);
+export const weakmapSet = 'WeakMap' in self ? uncurryThis(WeakMap.prototype.set) : (a,...args) => a.set(...args);
+export const weakmapHas = 'WeakMap' in self ? uncurryThis(WeakMap.prototype.has) : (a,...args) => a.has(...args);

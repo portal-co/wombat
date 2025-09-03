@@ -76,9 +76,9 @@ export var ThrowExceptions = { yes: false };
  * @type {(a: string) => WeakMap}
  */
 export const wombatKey = a => {
-  if (WeakMap) return (wombatKey[a] ??= new WeakMap());
+  if ('WeakMap' in self) return (wombatKey[a] ??= new WeakMap());
   const wb_key = '__WB_key_' + a;
-  return wombatKey[a] ??= freeze({
+  return (wombatKey[a] ??= freeze({
     get(object) {
       return object[wb_key];
     },
@@ -88,7 +88,47 @@ export const wombatKey = a => {
     has(object) {
       return wb_key in object;
     }
-  });
+  }));
 };
 
 export const wombatOrigApply = wombatKey(`orig_apply`);
+export const proxyFn =
+  'Proxy' in self
+    ? (f, a) => {
+        const { apply, construct } = Reflect;
+        return new Proxy(a, {
+          apply(target, self, args) {
+            return f((...args) => apply(target, self, args))(...args);
+          },
+          construct(target, args, self) {
+            return f((...args) => construct(target, args, self))(...args);
+          }
+        });
+      }
+    : (f, a) => f(a);
+export const proxyThisFn =
+  'Proxy' in self
+    ? (f, a) => {
+        const { apply, construct } = Reflect;
+        return new Proxy(a, {
+          apply(target, self, args) {
+            return apply(
+              f(function(...args) {
+                return apply(target, this, args);
+              }),
+              self,
+              args
+            );
+          },
+          construct(target, args, self) {
+            return apply(
+              f(function(...args) {
+                return construct(target, args, this);
+              }),
+              self,
+              args
+            );
+          }
+        });
+      }
+    : (f, a) => f(a);
