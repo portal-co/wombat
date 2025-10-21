@@ -76,9 +76,9 @@ export var ThrowExceptions = { yes: false };
  * @type {(a: string) => WeakMap}
  */
 export const wombatKey = a => {
-  if ('WeakMap' in self) return (wombatKey[a] ??= new WeakMap());
+  if ('WeakMap' in self) return (wombatKey[a] = wombatKey[a] ?? new WeakMap());
   const wb_key = '__WB_key_' + a;
-  return (wombatKey[a] ??= freeze({
+  return (wombatKey[a] = wombatKey[a] ?? freeze({
     get(object) {
       return object[wb_key];
     },
@@ -91,7 +91,7 @@ export const wombatKey = a => {
   }));
 };
 
-export const wombatOrigApply = wombatKey(`orig_apply`);
+export const wombatOrigApply = wombatKey('orig_apply');
 export const proxyFn =
   'Proxy' in self
     ? (f, a) => {
