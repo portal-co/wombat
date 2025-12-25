@@ -62,3 +62,21 @@ export function autobind(clazz) {
  * @type {{yes: boolean}}
  */
 export var ThrowExceptions = { yes: false };
+
+var wombatWeakMaps = {__proto__: null};
+
+
+export function wombatWeakMap(key) {
+if (!wombatWeakMaps[key]) {
+  if(typeof WeakMap === 'undefined') {
+    wombatWeakMaps[key] = {
+      get: function(obj) {return obj['__WB_' + key];},
+      set: function(obj, value) {obj['__WB_' + key] = value;},
+      has: function (obj) {return ('__WB_' + key) in obj;}
+    };
+  }else{
+    wombatWeakMaps[key] = new WeakMap();
+  }
+}
+return wombatWeakMaps[key];
+}
