@@ -67,16 +67,32 @@ var wombatWeakMaps = {__proto__: null};
 
 
 export function wombatWeakMap(key) {
-if (!wombatWeakMaps[key]) {
-  if(typeof WeakMap === 'undefined') {
-    wombatWeakMaps[key] = {
-      get: function(obj) {return obj['__WB_' + key];},
-      set: function(obj, value) {obj['__WB_' + key] = value;},
-      has: function (obj) {return ('__WB_' + key) in obj;}
-    };
-  }else{
-    wombatWeakMaps[key] = new WeakMap();
+  if (!wombatWeakMaps[key]) {
+    if(typeof WeakMap === 'undefined') {
+      wombatWeakMaps[key] = {
+        get: function(obj) {return obj['__WB_' + key];},
+        set: function(obj, value) {obj['__WB_' + key] = value;},
+        has: function (obj) {return ('__WB_' + key) in obj;}
+      };
+    }else{
+      wombatWeakMaps[key] = new WeakMap();
+    }
   }
+  return wombatWeakMaps[key];
 }
-return wombatWeakMaps[key];
+
+export function wombatProxy(handler,func){
+if(typeof Proxy === 'undefined'){
+  return handler(func)
+}else{
+  const {apply,construct} = Reflect;
+  return new Proxy(func,{
+    apply(target,thisArg,args){
+      return handler((...args) => apply(target,thisArg,args))(...args)
+    },
+    construct(target,args,newTarget){
+      return handler((...args) => construct(target,args,newTarget))(...args);
+    }
+  });
+}
 }
