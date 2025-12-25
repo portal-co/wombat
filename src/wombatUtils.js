@@ -82,17 +82,17 @@ export function wombatWeakMap(key) {
 }
 
 export function wombatProxy(handler,func){
-if(typeof Proxy === 'undefined'){
-  return handler(func)
-}else{
-  const {apply,construct} = Reflect;
-  return new Proxy(func,{
-    apply(target,thisArg,args){
-      return handler((...args) => apply(target,thisArg,args))(...args)
-    },
-    construct(target,args,newTarget){
-      return handler((...args) => construct(target,args,newTarget))(...args);
-    }
-  });
-}
+  if(typeof Proxy === 'undefined'){
+    return handler(func)
+  }else{
+    const {apply,construct} = Reflect;
+    return new Proxy(func,{
+      apply(target,thisArg,args){
+        return handler((...args) => apply(target,thisArg,args))(...args)
+      },
+      construct(target,args,newTarget){
+        return handler((...args) => construct(target,args,newTarget))(...args);
+      }
+    });
+  }
 }
